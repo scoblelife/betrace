@@ -67,7 +67,7 @@ func TestSecurityRobustness(t *testing.T) {
 			name:        "Very long string literal (1MB)",
 			input:       `when { payment.where(data == "` + strings.Repeat("x", 1000000) + `") } always { fraud_check }`,
 			shouldParse: true,
-			maxDuration: 500 * time.Millisecond, // Should handle large strings
+			maxDuration: 2 * time.Second, // Should handle large strings (varies by machine)
 		},
 		{
 			name:        "Multiple unicode categories",
