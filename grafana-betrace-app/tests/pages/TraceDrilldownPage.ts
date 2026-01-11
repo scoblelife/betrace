@@ -62,8 +62,9 @@ export class TraceDrilldownPage extends BasePage {
    * Verify trace loaded
    */
   async verifyTraceLoaded(traceId: string) {
-    // Check for trace ID in display
-    await expect(this.page.locator(`text=${traceId}`)).toBeVisible({ timeout: 10000 });
+    // Check for trace ID in display - use first() since trace ID appears in multiple places
+    // (header and trace details)
+    await expect(this.page.locator(`text=${traceId}`).first()).toBeVisible({ timeout: 10000 });
 
     // Or check for trace display container
     if (await this.traceDisplay.isVisible({ timeout: 5000 }).catch(() => false)) {
