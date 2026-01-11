@@ -44,20 +44,32 @@ test.describe('BeTrace Trace Drilldown', () => {
   test('T3.3 - Load trace - success (mock)', async ({ page }) => {
     // This test requires a mock backend or test trace ID
     const testTraceId = 'test-trace-12345';
+    const now = Date.now() * 1000000; // nanoseconds
 
-    // Intercept API call and return mock data
+    // Intercept API call and return mock data with complete trace structure
     await page.route('**/api/traces/**', (route) => {
       route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
           traceId: testTraceId,
+          serviceName: 'test-service',
+          startTime: now,
+          endTime: now + 1500000,
+          duration: 1500000,
+          violations: [],
           spans: [
             {
               spanId: 'span-1',
-              operationName: 'GET /api/users',
+              traceId: testTraceId,
+              name: 'GET /api/users',
+              kind: 'SERVER',
+              startTime: now,
+              endTime: now + 1500000,
               duration: 1500000,
-              startTime: Date.now() * 1000,
+              attributes: {},
+              status: { code: 'OK' },
+              resource: { 'service.name': 'test-service' },
             },
           ],
         }),
@@ -86,30 +98,50 @@ test.describe('BeTrace Trace Drilldown', () => {
     await tracePage.verifyTraceNotFound();
   });
 
-  test('T3.5 - Load trace - invalid format', async () => {
+  test('T3.5 - Load trace - invalid format', async ({ page }) => {
     const invalidTraceId = 'invalid!@#$%';
 
     await tracePage.enterTraceId(invalidTraceId);
 
+    // Wait for input to be registered in React state
+    await page.waitForTimeout(100);
+
     // Verify validation error or helpful message
     await tracePage.loadTraceButton.click();
 
-    // Should show error about invalid format
-    await tracePage.verifyErrorMessage();
+    // Should show error about invalid format - the Alert title is "Invalid Input"
+    await expect(page.locator('text=Invalid trace ID format')).toBeVisible({ timeout: 5000 });
   });
 
   test('T3.6 - Tempo deep link button visible (if feature exists)', async ({ page }) => {
     // This test checks if Tempo integration is present
     const testTraceId = 'test-trace-tempo';
+    const now = Date.now() * 1000000;
 
-    // Mock successful trace load
+    // Mock successful trace load with complete data
     await page.route('**/api/traces/**', (route) => {
       route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
           traceId: testTraceId,
-          spans: [{ spanId: 'span-1', operationName: 'test' }],
+          serviceName: 'test-service',
+          startTime: now,
+          endTime: now + 1000000,
+          duration: 1000000,
+          violations: [],
+          spans: [{
+            spanId: 'span-1',
+            traceId: testTraceId,
+            name: 'test',
+            kind: 'SERVER',
+            startTime: now,
+            endTime: now + 1000000,
+            duration: 1000000,
+            attributes: {},
+            status: { code: 'OK' },
+            resource: {},
+          }],
         }),
       });
     });
@@ -128,8 +160,9 @@ test.describe('BeTrace Trace Drilldown', () => {
   test('T3.7 - Clear and reload trace', async ({ page }) => {
     const traceId1 = 'trace-1';
     const traceId2 = 'trace-2';
+    const now = Date.now() * 1000000;
 
-    // Mock backend
+    // Mock backend with complete trace data
     await page.route('**/api/traces/**', (route) => {
       const url = route.request().url();
       const traceId = url.includes(traceId1) ? traceId1 : traceId2;
@@ -139,7 +172,23 @@ test.describe('BeTrace Trace Drilldown', () => {
         contentType: 'application/json',
         body: JSON.stringify({
           traceId,
-          spans: [{ spanId: 'span-1', operationName: `trace-${traceId}` }],
+          serviceName: 'test-service',
+          startTime: now,
+          endTime: now + 1000000,
+          duration: 1000000,
+          violations: [],
+          spans: [{
+            spanId: 'span-1',
+            traceId,
+            name: `operation-${traceId}`,
+            kind: 'SERVER',
+            startTime: now,
+            endTime: now + 1000000,
+            duration: 1000000,
+            attributes: {},
+            status: { code: 'OK' },
+            resource: {},
+          }],
         }),
       });
     });
@@ -148,7 +197,11 @@ test.describe('BeTrace Trace Drilldown', () => {
     await tracePage.loadTrace(traceId1);
     await tracePage.verifyTraceLoaded(traceId1);
 
-    // Load second trace (should replace first)
+    // Click "Load Different Trace" to go back to input form
+    await page.click('button:has-text("Load Different Trace")');
+    await page.waitForTimeout(500);
+
+    // Load second trace
     await tracePage.loadTrace(traceId2);
     await tracePage.verifyTraceLoaded(traceId2);
   });
@@ -163,10 +216,10 @@ test.describe('BeTrace Trace Drilldown', () => {
 
     await tracePage.loadTrace(testTraceId);
 
-    // Verify error message appears
-    await tracePage.verifyErrorMessage();
+    // Verify error message appears - TraceDrilldownPage shows "Failed to load trace" Alert
+    await expect(page.locator('text=Failed to load trace')).toBeVisible({ timeout: 10000 });
 
-    // Verify helpful retry option exists
+    // Verify helpful retry option exists (optional)
     const retryButton = page.locator('button:has-text("Retry")');
     if (await retryButton.isVisible({ timeout: 2000 }).catch(() => false)) {
       await expect(retryButton).toBeVisible();
