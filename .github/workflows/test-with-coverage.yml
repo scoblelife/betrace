@@ -10,7 +10,7 @@ on:
 jobs:
   backend-unit-tests:
     name: Backend Unit Tests
-    runs-on: depot-ubuntu-latest
+    runs-on: depot-ubuntu-24.04-arm
     timeout-minutes: 10
 
     steps:
@@ -57,7 +57,7 @@ jobs:
 
   backend-api-tests:
     name: Backend API Tests
-    runs-on: depot-ubuntu-latest
+    runs-on: depot-ubuntu-24.04-arm
     timeout-minutes: 15
 
     steps:
@@ -133,7 +133,7 @@ jobs:
 
   grafana-plugin-tests:
     name: Grafana Plugin Tests
-    runs-on: depot-ubuntu-latest
+    runs-on: depot-ubuntu-24.04-arm
     timeout-minutes: 20
 
     steps:
@@ -212,7 +212,7 @@ jobs:
 
   test-summary:
     name: Test Summary
-    runs-on: depot-ubuntu-latest
+    runs-on: depot-ubuntu-24.04-arm
     needs: [backend-unit-tests, backend-api-tests, grafana-plugin-tests]
     if: always()
 
