@@ -15,7 +15,7 @@ on:
 jobs:
   chaos-fuzzing:
     name: CHAOS Fuzzing (Crashes, Disk Full, Corruption)
-    runs-on: depot-ubuntu-latest
+    runs-on: depot-ubuntu-24.04-arm
     timeout-minutes: 5  # Quick fuzzing run
 
     steps:
@@ -131,7 +131,7 @@ jobs:
 
   dsl-fuzzing:
     name: DSL Parser Fuzzing
-    runs-on: depot-ubuntu-latest
+    runs-on: depot-ubuntu-24.04-arm
     timeout-minutes: 5  # Quick fuzzing run
 
     steps:
@@ -229,7 +229,7 @@ jobs:
 
   simulation-fuzzing:
     name: Backend Simulation Fuzzing
-    runs-on: depot-ubuntu-latest
+    runs-on: depot-ubuntu-24.04-arm
     timeout-minutes: 5  # Quick fuzzing run
 
     steps:
@@ -336,7 +336,7 @@ jobs:
 
   fuzzing-summary:
     name: Fuzzing Campaign Summary
-    runs-on: depot-ubuntu-latest
+    runs-on: depot-ubuntu-24.04-arm
     needs: [chaos-fuzzing, dsl-fuzzing, simulation-fuzzing]
     if: always()
 
