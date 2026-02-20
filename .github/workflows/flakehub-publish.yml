@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   publish:
-    runs-on: depot-ubuntu-latest
+    runs-on: depot-ubuntu-24.04-arm
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
