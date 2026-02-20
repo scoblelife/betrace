@@ -1,0 +1,11 @@
+# BeTrace Railway Configuration
+# Multi-service: use Railway service settings to point at subdirectories
+# or override rootDirectory per service in the Railway dashboard.
+
+# Default: BFF (TanStack frontend)
+[build]
+builder = "nixpacks"
+buildCommand = "cd bff && npm ci && npm run build"
+
+[deploy]
+startCommand = "cd bff && npm start"
