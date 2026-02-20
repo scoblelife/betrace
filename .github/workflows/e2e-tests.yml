@@ -10,7 +10,7 @@ on:
 jobs:
   e2e-tests:
     name: E2E Tests (Grafana ${{ matrix.grafana-version }})
-    runs-on: depot-ubuntu-latest
+    runs-on: depot-ubuntu-24.04-arm
 
     strategy:
       fail-fast: false
@@ -198,7 +198,7 @@ jobs:
 
   test-summary:
     name: Test Summary
-    runs-on: depot-ubuntu-latest
+    runs-on: depot-ubuntu-24.04-arm
     needs: e2e-tests
     if: always()
 
