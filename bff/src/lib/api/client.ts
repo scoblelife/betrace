@@ -12,7 +12,7 @@ interface RateLimitConfig {
 
 // Base API configuration
 export const API_CONFIG = {
-  baseUrl: import.meta.env.VITE_BETRACE_API_URL || 'http://localhost:8080',
+  baseUrl: import.meta.env.VITE_BETRACE_API_URL || 'http://localhost:12011',
   timeout: 30000,
 } as const;
 

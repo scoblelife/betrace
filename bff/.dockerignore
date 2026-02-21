@@ -1,0 +1,10 @@
+node_modules
+dist
+.vite
+.storybook
+e2e
+coverage
+reports
+*.test.*
+*.spec.*
+__tests__

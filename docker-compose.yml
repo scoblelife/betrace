@@ -61,6 +61,23 @@ services:
     networks:
       - betrace
 
+  # BeTrace BFF (Frontend)
+  bff:
+    build:
+      context: ./bff
+      dockerfile: Dockerfile
+    container_name: betrace-bff
+    ports:
+      - "${BETRACE_PORT_BFF:-12013}:3000"
+    environment:
+      - VITE_BETRACE_API_URL=http://backend:12011
+      - VITE_DEMO_MODE=true
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - betrace
+
   # Tempo (trace storage)
   tempo:
     image: grafana/tempo:latest

@@ -8,8 +8,8 @@ export * from '../websocket/client';
 
 // Environment configuration
 export const API_ENDPOINTS = {
-  BETRACE_API: import.meta.env.VITE_BETRACE_API_URL || 'http://localhost:8080',
-  BETRACE_WS: import.meta.env.VITE_BETRACE_WS_URL || 'ws://localhost:8080',
+  BETRACE_API: import.meta.env.VITE_BETRACE_API_URL || 'http://localhost:12011',
+  BETRACE_WS: import.meta.env.VITE_BETRACE_WS_URL || 'ws://localhost:12011',
 } as const;
 
 // Health check function

@@ -23,8 +23,8 @@ function Index() {
 
               {/* Development Status */}
               <div className="flex items-center justify-center gap-4 mb-12 flex-wrap">
-                <StatusInfoBadge variant="amber" icon={AlertCircle}>
-                  In Development
+                <StatusInfoBadge variant="green" icon={Award}>
+                  Enterprise Ready
                 </StatusInfoBadge>
                 <StatusInfoBadge variant="blue" icon={Shield}>
                   Security-First Design

@@ -48,7 +48,7 @@ function WorkerInitializer() {
  */
 function WebSocketIntegrator() {
   useWebSocket({
-    url: import.meta.env.VITE_WEBSOCKET_URL || 'ws://localhost:8080/ws',
+    url: import.meta.env.VITE_WEBSOCKET_URL || 'ws://localhost:12011/ws',
     onSignalUpdate: (signalId: string, status: any) => {
       // This will be handled by the WebSocket hook using the UI controller
       console.debug('WebSocket signal update:', { signalId, status });
