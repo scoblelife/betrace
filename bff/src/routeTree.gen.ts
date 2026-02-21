@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TenantRouteImport } from './routes/tenant'
+import { Route as StatusRouteImport } from './routes/status'
 import { Route as SignalsRouteImport } from './routes/signals'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SecurityRouteImport } from './routes/security'
@@ -30,6 +31,11 @@ import { Route as ComplianceControlsFrameworkControlIdRouteImport } from './rout
 const TenantRoute = TenantRouteImport.update({
   id: '/tenant',
   path: '/tenant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusRoute = StatusRouteImport.update({
+  id: '/status',
+  path: '/status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignalsRoute = SignalsRouteImport.update({
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
   '/signals': typeof SignalsRouteWithChildren
+  '/status': typeof StatusRoute
   '/tenant': typeof TenantRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/signals/$id': typeof SignalsIdRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/rules': typeof RulesRoute
   '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
+  '/status': typeof StatusRoute
   '/tenant': typeof TenantRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/signals/$id': typeof SignalsIdRoute
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/security': typeof SecurityRoute
   '/settings': typeof SettingsRoute
   '/signals': typeof SignalsRouteWithChildren
+  '/status': typeof StatusRoute
   '/tenant': typeof TenantRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/signals/$id': typeof SignalsIdRoute
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/settings'
     | '/signals'
+    | '/status'
     | '/tenant'
     | '/auth/callback'
     | '/signals/$id'
@@ -204,6 +214,7 @@ export interface FileRouteTypes {
     | '/rules'
     | '/security'
     | '/settings'
+    | '/status'
     | '/tenant'
     | '/auth/callback'
     | '/signals/$id'
@@ -223,6 +234,7 @@ export interface FileRouteTypes {
     | '/security'
     | '/settings'
     | '/signals'
+    | '/status'
     | '/tenant'
     | '/auth/callback'
     | '/signals/$id'
@@ -243,6 +255,7 @@ export interface RootRouteChildren {
   SecurityRoute: typeof SecurityRoute
   SettingsRoute: typeof SettingsRoute
   SignalsRoute: typeof SignalsRouteWithChildren
+  StatusRoute: typeof StatusRoute
   TenantRoute: typeof TenantRoute
 }
 
@@ -253,6 +266,13 @@ declare module '@tanstack/react-router' {
       path: '/tenant'
       fullPath: '/tenant'
       preLoaderRoute: typeof TenantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status': {
+      id: '/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof StatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signals': {
@@ -419,6 +439,7 @@ const rootRouteChildren: RootRouteChildren = {
   SecurityRoute: SecurityRoute,
   SettingsRoute: SettingsRoute,
   SignalsRoute: SignalsRouteWithChildren,
+  StatusRoute: StatusRoute,
   TenantRoute: TenantRoute,
 }
 export const routeTree = rootRouteImport
