@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { workosAuth } from '@/lib/auth/workos'
 import { useAuth } from '@/lib/auth/auth-context'
+import { isWorkOSConfigured } from '@/lib/auth/workos'
 
 export const Route = createFileRoute('/auth/callback')({
   component: AuthCallbackPage,
@@ -17,52 +17,29 @@ export const Route = createFileRoute('/auth/callback')({
 
 function AuthCallbackPage() {
   const navigate = useNavigate()
-  const { login } = useAuth()
-  const { code, state, error, error_description } = Route.useSearch()
-  const [loading, setLoading] = useState(false)
+  const { isAuthenticated, isLoading } = useAuth()
+  const { error, error_description } = Route.useSearch()
   const [authError, setAuthError] = useState<string | null>(null)
 
   useEffect(() => {
-    const handleCallback = async () => {
-      setLoading(true)
-      setAuthError(null)
-
-      try {
-        // Handle OAuth error
-        if (error) {
-          throw new Error(error_description || error)
-        }
-
-        // Validate required parameters
-        if (!code || !state) {
-          throw new Error('Missing required authentication parameters')
-        }
-
-        // Exchange code for session
-        const session = await workosAuth.handleCallback(code, state)
-        login(session.user, session.tenant)
-
-        // Redirect to dashboard on successful authentication
-        navigate({ to: '/dashboard' })
-
-      } catch (err) {
-        console.error('Authentication callback error:', err)
-        setAuthError(err instanceof Error ? err.message : 'Authentication failed')
-
-        // Redirect back to auth page after a delay
-        setTimeout(() => {
-          navigate({ to: '/auth' })
-        }, 3000)
-
-      } finally {
-        setLoading(false)
-      }
+    if (error) {
+      setAuthError(error_description || error)
+      setTimeout(() => navigate({ to: '/auth' }), 3000)
+      return
     }
 
-    handleCallback()
-  }, [code, state, error, error_description, navigate, login])
+    // When using AuthKit, the provider handles the code exchange automatically.
+    // Once authenticated, redirect to dashboard.
+    if (!isLoading && isAuthenticated) {
+      navigate({ to: '/dashboard' })
+    }
 
-  // Show loading or error state
+    // If not using WorkOS and no auth, redirect to login
+    if (!isLoading && !isAuthenticated && !isWorkOSConfigured) {
+      navigate({ to: '/auth' })
+    }
+  }, [isAuthenticated, isLoading, error, error_description, navigate])
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">

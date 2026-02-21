@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useAuth } from '@/lib/auth/auth-context'
+import { isWorkOSConfigured } from '@/lib/auth/workos'
 import { Layout } from '@/components/layout/layout'
 import { StyledCard, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/styled-card'
 import { Button } from '@/components/ui/button'
@@ -12,7 +13,7 @@ export const Route = createFileRoute('/auth')({
 
 function AuthPage() {
   const navigate = useNavigate()
-  const { enableDemoMode, isLoading, isAuthenticated } = useAuth()
+  const { enableDemoMode, signIn, isLoading, isAuthenticated } = useAuth()
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
@@ -55,13 +56,10 @@ function AuthPage() {
             <div className="space-y-4">
               <Button
                 className="w-full"
-                onClick={() => {
-                  // TODO: Implement WorkOS SSO
-                  console.log('SSO requested - WorkOS will handle this');
-                }}
-                disabled={isLoading}
+                onClick={() => signIn()}
+                disabled={isLoading || !isWorkOSConfigured}
               >
-                {isLoading ? 'Loading...' : 'Sign in with SSO'}
+                {isLoading ? 'Loading...' : isWorkOSConfigured ? 'Sign in with SSO' : 'Sign in with SSO (not configured)'}
               </Button>
 
               <div className="relative">

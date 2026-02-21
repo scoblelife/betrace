@@ -59,7 +59,7 @@
     "@tanstack/react-router-devtools": "^1.131.48",
     "@tanstack/router-devtools": "^1.131.48",
     "@types/validator": "^13.15.3",
-    "@workos-inc/node": "^7.70.0",
+    "@workos-inc/authkit-react": "^0.16.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",

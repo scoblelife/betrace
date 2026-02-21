@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/betracehq/betrace/backend/internal/middleware"
 	"github.com/betracehq/betrace/backend/internal/observability"
 	"github.com/betracehq/betrace/backend/internal/rules"
 	"github.com/betracehq/betrace/backend/pkg/models"
@@ -18,14 +20,17 @@ type Server struct {
 	engine    *rules.RuleEngine
 	startTime time.Time
 	version   string
+	auth      *middleware.AuthMiddleware
 }
 
 // NewServer creates a new API server
 func NewServer(version string) *Server {
+	clientID := os.Getenv("WORKOS_CLIENT_ID")
 	return &Server{
 		engine:    rules.NewRuleEngine(),
 		startTime: time.Now(),
 		version:   version,
+		auth:      middleware.NewAuthMiddleware(clientID),
 	}
 }
 
@@ -435,7 +440,7 @@ func (s *Server) Run(ctx context.Context, addr string) error {
 	mux := http.NewServeMux()
 	s.RegisterRoutes(mux)
 
-	handler := s.Middleware(mux)
+	handler := s.auth.Handler(s.Middleware(mux))
 
 	server := &http.Server{
 		Addr:         addr,

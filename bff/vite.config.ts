@@ -75,7 +75,7 @@ export default defineConfig({
 
           // Auth and security
           'auth-vendor': [
-            '@workos-inc/node',
+            '@workos-inc/authkit-react',
             'jose',
             'isomorphic-dompurify'
           ]

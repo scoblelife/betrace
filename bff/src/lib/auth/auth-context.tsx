@@ -1,10 +1,23 @@
-// Simple React Context for auth using WorkOS
-// No Zustand - just React Context + localStorage for persistence
+// Auth context that delegates to WorkOS AuthKit when configured,
+// or falls back to demo mode.
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import type { User, Tenant } from '@/lib/types/auth';
-import { workosAuth } from './workos';
+import { isWorkOSConfigured, mapWorkOSUser, mapWorkOSTenant, getDemoSession } from './workos';
 import { AuthGuard, type Permission, type Role } from '@/lib/security/auth-guard';
+
+// Conditionally import AuthKit hook — only used when WorkOS is configured
+let useAuthKitHook: (() => any) | null = null;
+if (isWorkOSConfigured) {
+  // Dynamic import isn't needed; tree-shaking handles it.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  try {
+    const authkit = await import('@workos-inc/authkit-react');
+    useAuthKitHook = authkit.useAuth;
+  } catch {
+    console.warn('Failed to load AuthKit');
+  }
+}
 
 interface AuthState {
   user: User | null;
@@ -18,33 +31,59 @@ interface AuthContextValue extends AuthState {
   login: (user: User, tenant: Tenant) => void;
   logout: () => void;
   enableDemoMode: () => void;
+  signIn: () => void;
+  getAccessToken: () => Promise<string | undefined>;
   canAccess: (permission: Permission) => boolean;
   hasMinRole: (role: Role) => boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const DEMO_USER: User = {
-  id: 'demo-user',
-  email: 'demo@betrace.dev',
-  firstName: 'Demo',
-  lastName: 'User',
-  profilePictureUrl: 'https://ui-avatars.com/api/?name=Demo+User&background=3b82f6&color=fff',
-  role: 'admin',
-  tenantId: 'demo-tenant',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-};
+/**
+ * Internal provider for WorkOS AuthKit mode.
+ * Wraps AuthKit's useAuth() and maps to our context shape.
+ */
+function WorkOSAuthProviderInner({ children }: { children: React.ReactNode }) {
+  const authkit = useAuthKitHook!();
+  const [mappedUser, setMappedUser] = useState<User | null>(null);
+  const [mappedTenant, setMappedTenant] = useState<Tenant | null>(null);
 
-const DEMO_TENANT: Tenant = {
-  id: 'demo-tenant',
-  name: 'Demo Organization',
-  domain: 'demo.com',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-};
+  useEffect(() => {
+    if (authkit.user) {
+      const user = mapWorkOSUser(authkit.user);
+      setMappedUser(user);
+      const orgId = authkit.user.organizationId || authkit.organizationId;
+      if (orgId) {
+        setMappedTenant(mapWorkOSTenant(orgId));
+      }
+    } else {
+      setMappedUser(null);
+      setMappedTenant(null);
+    }
+  }, [authkit.user, authkit.organizationId]);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const value: AuthContextValue = {
+    user: mappedUser,
+    tenant: mappedTenant,
+    isAuthenticated: !!authkit.user,
+    isLoading: authkit.isLoading,
+    isDemoMode: false,
+    login: () => { /* handled by AuthKit */ },
+    logout: () => authkit.signOut(),
+    enableDemoMode: () => { /* not applicable in WorkOS mode */ },
+    signIn: () => authkit.signIn(),
+    getAccessToken: () => authkit.getAccessToken(),
+    canAccess: (permission: Permission) => AuthGuard.hasPermission(mappedUser, permission),
+    hasMinRole: (role: Role) => AuthGuard.hasMinRole(mappedUser, role),
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+/**
+ * Internal provider for demo/local mode (no WorkOS).
+ */
+function DemoAuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({
     user: null,
     tenant: null,
@@ -59,11 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        setState(prev => ({
-          ...prev,
-          ...parsed,
-          isLoading: false,
-        }));
+        setState(prev => ({ ...prev, ...parsed, isLoading: false }));
       } catch {
         setState(prev => ({ ...prev, isLoading: false }));
       }
@@ -72,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Save to localStorage when state changes
+  // Persist to localStorage
   useEffect(() => {
     if (!state.isLoading) {
       localStorage.setItem('betrace-auth', JSON.stringify({
@@ -84,72 +119,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state.user, state.tenant, state.isAuthenticated, state.isDemoMode, state.isLoading]);
 
-  const login = (user: User, tenant: Tenant) => {
-    setState({
-      user,
-      tenant,
-      isAuthenticated: true,
-      isLoading: false,
-      isDemoMode: false,
-    });
-  };
+  const login = useCallback((user: User, tenant: Tenant) => {
+    setState({ user, tenant, isAuthenticated: true, isLoading: false, isDemoMode: false });
+  }, []);
 
-  const logout = () => {
-    setState({
-      user: null,
-      tenant: null,
-      isAuthenticated: false,
-      isLoading: false,
-      isDemoMode: false,
-    });
+  const logout = useCallback(() => {
+    setState({ user: null, tenant: null, isAuthenticated: false, isLoading: false, isDemoMode: false });
     localStorage.removeItem('betrace-auth');
-  };
+  }, []);
 
-  const enableDemoMode = async () => {
-    try {
-      const session = await workosAuth.getDemoSession();
-      setState({
-        user: session.user,
-        tenant: session.tenant,
-        isAuthenticated: true,
-        isLoading: false,
-        isDemoMode: true,
-      });
-    } catch (error) {
-      console.error('Failed to enable demo mode:', error);
-      // Fallback to static demo data
-      setState({
-        user: DEMO_USER,
-        tenant: DEMO_TENANT,
-        isAuthenticated: true,
-        isLoading: false,
-        isDemoMode: true,
-      });
-    }
-  };
-
-  const canAccess = (permission: Permission): boolean => {
-    return AuthGuard.hasPermission(state.user, permission);
-  };
-
-  const hasMinRole = (role: Role): boolean => {
-    return AuthGuard.hasMinRole(state.user, role);
-  };
+  const enableDemoMode = useCallback(() => {
+    const { user, tenant } = getDemoSession();
+    setState({ user, tenant, isAuthenticated: true, isLoading: false, isDemoMode: true });
+  }, []);
 
   const value: AuthContextValue = {
     ...state,
     login,
     logout,
     enableDemoMode,
-    canAccess,
-    hasMinRole,
+    signIn: () => { /* no-op in demo mode */ },
+    getAccessToken: async () => undefined,
+    canAccess: (permission: Permission) => AuthGuard.hasPermission(state.user, permission),
+    hasMinRole: (role: Role) => AuthGuard.hasMinRole(state.user, role),
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+/**
+ * Main AuthProvider — delegates to WorkOS or Demo based on configuration.
+ */
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  if (isWorkOSConfigured && useAuthKitHook) {
+    return <WorkOSAuthProviderInner>{children}</WorkOSAuthProviderInner>;
+  }
+  return <DemoAuthProvider>{children}</DemoAuthProvider>;
 }
 
 export function useAuth() {

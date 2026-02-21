@@ -5,7 +5,10 @@ import { RouterProvider, createRouter } from '@tanstack/react-router';
 // TanStack Query for server state management
 import { QueryProvider } from '@/lib/providers/query-client';
 
-// WorkOS + React Context for authentication
+// WorkOS AuthKit provider (only active when VITE_WORKOS_CLIENT_ID is set)
+import { isWorkOSConfigured, WORKOS_CLIENT_ID } from '@/lib/auth/workos';
+
+// React Context for authentication (wraps AuthKit or demo mode)
 import { AuthProvider } from '@/lib/auth/auth-context';
 
 // Theme provider for light/dark mode
@@ -18,6 +21,13 @@ import { initializeProfiling } from '@/lib/profiling/pyroscope-init';
 import { routeTree } from './routeTree.gen';
 
 import './styles/globals.css';
+
+// Conditionally import AuthKitProvider
+let AuthKitProvider: React.ComponentType<{ clientId: string; children: React.ReactNode }> | null = null;
+if (isWorkOSConfigured) {
+  const mod = await import('@workos-inc/authkit-react');
+  AuthKitProvider = mod.AuthKitProvider;
+}
 
 // Initialize profiling before React render
 const profilingStatus = initializeProfiling();
@@ -39,7 +49,7 @@ declare module '@tanstack/react-router' {
 
 // TanStack-first app: Query + Router + WorkOS + Theme
 function App() {
-  return (
+  const inner = (
     <QueryProvider>
       <ThemeProvider>
         <AuthProvider>
@@ -48,6 +58,17 @@ function App() {
       </ThemeProvider>
     </QueryProvider>
   );
+
+  // Wrap in AuthKitProvider when WorkOS is configured
+  if (AuthKitProvider && WORKOS_CLIENT_ID) {
+    return (
+      <AuthKitProvider clientId={WORKOS_CLIENT_ID}>
+        {inner}
+      </AuthKitProvider>
+    );
+  }
+
+  return inner;
 }
 
 // Render immediately (no loading states, no async setup)
