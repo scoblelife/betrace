@@ -3,7 +3,7 @@ import { CheckCircle2, AlertTriangle } from 'lucide-react'
 /**
  * PRD-004: Compliance Score Card
  *
- * Displays aggregate coverage score for a compliance framework (SOC2, HIPAA).
+ * Displays aggregate coverage score for a compliance framework (SOC 2, HIPAA).
  */
 
 interface FrameworkSummaryDTO {

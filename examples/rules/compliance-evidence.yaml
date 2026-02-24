@@ -4,15 +4,15 @@
 #
 rules:
 - id: soc2-cc6-1-pii-access-authorization
-  name: 'SOC2 CC6.1: PII Access Requires Authorization'
+  name: 'SOC 2 CC6.1: PII Access Requires Authorization'
   description: 'Ensures all PII database access has prior authorization check.
 
-    SOC2 Trust Service Criteria CC6.1: Logical and Physical Access Controls
+    SOC 2 Trust Service Criteria CC6.1: Logical and Physical Access Controls
 
     '
   severity: critical
   compliance_frameworks:
-  - SOC2
+  - SOC 2
   - HIPAA
   condition: when { database.query.where(data.contains_pii == true) } always { auth.check }
   example_violation:
@@ -24,15 +24,15 @@ rules:
         data.contains_pii: true
         table: patients
 - id: soc2-cc7-2-pii-access-audit-log
-  name: 'SOC2 CC7.2: PII Access Must Be Audited'
+  name: 'SOC 2 CC7.2: PII Access Must Be Audited'
   description: 'Ensures all PII access generates audit log.
 
-    SOC2 CC7.2: System Monitoring - The entity monitors system components
+    SOC 2 CC7.2: System Monitoring - The entity monitors system components
 
     '
   severity: high
   compliance_frameworks:
-  - SOC2
+  - SOC 2
   - HIPAA
   condition: when { pii.access } always { audit.log }
   example_violation:
@@ -99,15 +99,15 @@ rules:
         protocol: http
         encrypted: false
 - id: soc2-cc6-6-encryption-at-rest
-  name: 'SOC2 CC6.6: Encryption at Rest for Sensitive Data'
+  name: 'SOC 2 CC6.6: Encryption at Rest for Sensitive Data'
   description: 'Ensures sensitive data is encrypted when stored.
 
-    SOC2 CC6.6: Encryption of data at rest
+    SOC 2 CC6.6: Encryption of data at rest
 
     '
   severity: high
   compliance_frameworks:
-  - SOC2
+  - SOC 2
   condition: when { database.write.where(data.sensitive == true) } always { encryption.at_rest.where(enabled == true) }
   example_violation:
     description: Sensitive data written without encryption
@@ -120,15 +120,15 @@ rules:
       attributes:
         enabled: false
 - id: soc2-cc8-1-change-management
-  name: 'SOC2 CC8.1: Change Management Controls'
+  name: 'SOC 2 CC8.1: Change Management Controls'
   description: 'Ensures production changes have approval.
 
-    SOC2 CC8.1: Change Management - Authorizes changes prior to implementation
+    SOC 2 CC8.1: Change Management - Authorizes changes prior to implementation
 
     '
   severity: high
   compliance_frameworks:
-  - SOC2
+  - SOC 2
   condition: when { deployment.production } always { change.approval.where(approver_verified == true) }
   example_violation:
     description: Production deployment without change approval
@@ -174,15 +174,15 @@ rules:
         event_type: privilege_escalation
         user: user123
 - id: pci-dss-7-1-access-control
-  name: 'PCI-DSS 7.1: Access Control to Cardholder Data'
+  name: 'PCI DSS v4.0.1 Requirement 7.1: Access Control to Cardholder Data'
   description: 'Ensures cardholder data access is restricted to authorized users.
 
-    PCI-DSS Requirement 7.1: Limit access to system components and cardholder data
+    PCI DSS v4.0.1 Requirement 7.1: Limit access to system components and cardholder data
 
     '
   severity: critical
   compliance_frameworks:
-  - PCI-DSS
+  - PCI DSS
   condition: when { cardholder_data.access } always { auth.check.where(authorized == true) }
   example_violation:
     description: Unauthorized access to cardholder data
@@ -192,15 +192,15 @@ rules:
         card_number: '****1234'
         user_role: viewer
 - id: pci-dss-10-2-audit-trail
-  name: 'PCI-DSS 10.2: Audit Trail for Cardholder Data Access'
+  name: 'PCI DSS v4.0.1 Requirement 10.2: Audit Trail for Cardholder Data Access'
   description: 'Ensures all cardholder data access is logged.
 
-    PCI-DSS Requirement 10.2: Implement automated audit trails
+    PCI DSS v4.0.1 Requirement 10.2: Implement automated audit trails
 
     '
   severity: critical
   compliance_frameworks:
-  - PCI-DSS
+  - PCI DSS
   condition: when { cardholder_data.access } always { audit.log.where(log_type == pci_audit) }
   example_violation:
     description: Cardholder data accessed without audit log
@@ -250,16 +250,16 @@ rules:
     - span: human_review.available
       attributes:
         available: false
-- id: iso27001-a9-2-1-user-registration
-  name: 'ISO27001 A.9.2.1: User Registration and De-Registration'
+- id: iso27001-a8-2-user-access-provisioning
+  name: 'ISO/IEC 27001:2022 A.8.2: User Access Provisioning'
   description: 'Ensures user access is formally registered and approved.
 
-    ISO27001 Control A.9.2.1: User registration and de-registration
+    ISO/IEC 27001:2022 Control A.8.2: User access provisioning (Technology Controls)
 
     '
   severity: medium
   compliance_frameworks:
-  - ISO27001
+  - ISO/IEC 27001
   condition: when { user.registration } always { formal_approval.where(documented == true) }
   example_violation:
     description: User registered without formal approval

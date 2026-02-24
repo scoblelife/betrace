@@ -10,7 +10,7 @@ import { RefreshCw } from 'lucide-react'
  * Main dashboard component showing compliance posture across all frameworks.
  *
  * Features:
- * - Framework score cards (SOC2, HIPAA)
+ * - Framework score cards (SOC 2, HIPAA)
  * - Control coverage grid
  * - Auto-refresh every 5 seconds
  * - Manual refresh button
@@ -107,7 +107,7 @@ export function ComplianceDashboard() {
 
       {/* Framework Score Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <ComplianceScoreCard framework="SOC2" summary={data.soc2} />
+        <ComplianceScoreCard framework="SOC 2" summary={data.soc2} />
         <ComplianceScoreCard framework="HIPAA" summary={data.hipaa} />
 
         {/* Total Spans Card */}

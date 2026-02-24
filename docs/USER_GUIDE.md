@@ -48,7 +48,7 @@ BeTrace is a **behavioral pattern matching engine for OpenTelemetry traces**. It
 
 **For Compliance**:
 ```
-"I need evidence that my controls are working (SOC2 CC6.1, HIPAA)"
+"I need evidence that my controls are working (SOC 2 CC6.1, HIPAA)"
 → BeTrace emits cryptographically-signed compliance spans for audit trails
 ```
 

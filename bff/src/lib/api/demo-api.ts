@@ -36,7 +36,7 @@ const DEMO_RULES: DemoRule[] = [
   {
     id: 'rule-001',
     name: 'Payment Requires Fraud Check',
-    description: 'Payment span must be preceded by fraud-check span in trace (PCI-DSS compliance)',
+    description: 'Payment span must be preceded by fraud-check span in trace (PCI DSS compliance)',
     expression: 'trace.spans.payment.exists && !trace.spans.fraud_check.exists',
     severity: 'CRITICAL',
     active: true,
@@ -100,7 +100,7 @@ const DEMO_SIGNALS: DemoSignal[] = [
   {
     id: 'signal-001',
     title: 'Payment Without Fraud Check',
-    description: 'Payment processed without fraud-check span in trace - PCI-DSS violation',
+    description: 'Payment processed without fraud-check span in trace - PCI DSS violation',
     service: 'payment-service',
     severity: 'CRITICAL',
     status: 'open',

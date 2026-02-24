@@ -179,7 +179,7 @@ export const FeatureCards: Story = {
         <FeatureCard
           icon={Globe}
           title="Enterprise Security"
-          description="SOC2 compliant with WorkOS SSO integration, role-based access control, and comprehensive audit logging."
+          description="SOC 2 compliant with WorkOS SSO integration, role-based access control, and comprehensive audit logging."
           iconColor="orange"
           benefit="Zero-trust architecture"
         />
